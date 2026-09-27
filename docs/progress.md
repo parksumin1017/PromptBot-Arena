@@ -27,7 +27,7 @@
 - [x] 프로젝트 제안서(`docs/proposal.md`) 아카이빙
 - [x] `.gitignore` 작성 (보안 토큰, 가상환경, 빌드 캐시 배제)
 - [x] GitHub 연동 준비 (토큰 `.env` 안전 저장 및 로컬 설정)
-- [ ] Git 로컬 저장소 초기화 (`git init`) 및 첫 커밋 생성
+- [x] Git 로컬 저장소 초기화 (`git init`) 및 첫 커밋 생성
 - [ ] GitHub 원격 저장소(`origin`) 연동 및 push
 
 ### 2. 가상 시뮬레이터 (Digital Twin - 컴퓨터 한 대 개발용)
