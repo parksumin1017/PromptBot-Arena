@@ -9,7 +9,8 @@
 
 * [프로젝트 제안서 (Proposal)](docs/proposal.md)
 * [시스템 명세 및 아키텍처 (System Specification)](docs/overview.md)
-* [주간 개발 진행 상황 (Weekly Progress)](docs/progress.md)
+* [앞으로 할 일 목록 (To-Do List)](docs/todo.md)
+* [작업 완료 내역 및 진행 로그 (Work Progress)](docs/progress.md)
 
 ---
 

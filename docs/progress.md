@@ -1,57 +1,36 @@
-# Project Progress: 프롬프트 봇 아레나 (PromptBot Arena)
+# Work Progress: 프롬프트 봇 아레나 (PromptBot Arena)
 
-> **프로젝트 기간**: 2026년 2학기 (Week 1 ~ Week 15)  
-> **최종 갱신일**: 2026-09-27  
-> **현재 단계**: Week 1 (시스템 환경 구축 및 가상 시뮬레이터/CaP 코어 설계)
-
----
-
-## 📌 마일스톤 개요 (Milestone Roadmap)
-
-| 주차 | 기간 | 주요 목표 | 상태 |
-|:---|:---|:---|:---:|
-| **Week 1** | 9월 4주 | 로컬 환경 셋업, 2D 시뮬레이터 뼈대, AST 보안 파서 및 CaP 프롬프트 템플릿 설계 | 🟡 진행 중 |
-| **Week 2~3** | 10월 1~2주 | 2D 시뮬레이터 완성, 웹캠 HSV 비전 알고리즘 검증, 하드웨어 부품 주문/조립 준비 | ⚪ 대기 |
-| **Week 4~6** | 10월 3~5주 | 2륜 로봇 1차 조립, 무선 제어(ESP-NOW/UDP) 통신 안정화, CaP 기본 주행 연동 | ⚪ 대기 |
-| **Week 7** | 10월 말 | **[중간 점검]** 하드웨어-비전-기초 CaP 통합 시연 ("공으로 가라" 등 자율 추적) | ⚪ 대기 |
-| **Week 8~10** | 11월 초·중순 | 메인 배틀(Core Pusher) 완성, 1~10단계 적응형 보스 탑재, AST 샌드박스 완비 | ⚪ 대기 |
-| **Week 11~13** | 11월 말·12월 초 | 60초 배틀 완주율(95%+) 및 판정 정확도(100%) 검증, 추가 배틀 모드 확장 | ⚪ 대기 |
-| **Week 14** | 12/11 | **[최종 시연 Demo Day]** 2-로봇 실시간 피지컬 배틀 및 자연어 프롬프팅 최종 시연 | ⚪ 대기 |
-| **Week 15** | 12/29 | Final Report 제출 및 최종 마무리 | ⚪ 대기 |
+본 문서는 **이미 수행하여 완료된 작업 내역(Work Done)**과 시스템 변경 이력을 누적 기록하는 작업 일지입니다.  
+앞으로 진행할 작업(할 일) 목록은 [todo.md](docs/todo.md)를 참조합니다.
 
 ---
 
-## 🚀 Week 1 진행 상황 (현재 주차: 2026-09-27 ~ )
+## 📊 작업 완료 내역 요약 (Summary of Completed Tasks)
 
-### 1. 환경 및 형상 관리
-- [x] 프로젝트 제안서(`docs/proposal.md`) 아카이빙
-- [x] `.gitignore` 작성 (보안 토큰, 가상환경, 빌드 캐시 배제)
-- [x] GitHub 연동 준비 (토큰 `.env` 안전 저장 및 로컬 설정)
-- [x] Git 로컬 저장소 초기화 (`git init`) 및 첫 커밋 생성
-- [ ] GitHub 원격 저장소(`origin`) 연동 및 push
-
-### 2. 가상 시뮬레이터 (Digital Twin - 컴퓨터 한 대 개발용)
-- [ ] Python 가상환경(`.venv`) 구성 및 의존성 패키지 설치 (`pygame`, `numpy`, `opencv-python` 등)
-- [ ] 책상 경기장 규격(가로:세로 비율) 2D 시뮬레이션 창 렌더링
-- [ ] 아군 로봇, 상대 로봇, 퍽(Puck) 3개 객체 모델링
-- [ ] 2륜 차동 구동(Differential Drive) 기구학 ($v, \omega \to x, y, \theta$) 구현
-- [ ] 경기장 벽면 및 퍽-로봇 간 기초 충돌/밀기 물리 엔진 구현
-
-### 3. Code-as-Policies(CaP) 파이프라인
-- [ ] Action Primitives 인터페이스 명세 확정 (`get_my_pose`, `get_puck_positions`, `move_to`, `push_to` 등)
-- [ ] LLM 프롬프트 템플릿(System Prompt + Few-shot) 설계
-- [ ] LLM API 연동 (Gemini / OpenAI 등) 및 파싱 레이어 구축
-
-### 4. AST 보안 샌드박스
-- [ ] `ast.NodeVisitor` 기반 문법 분석기 구현 (비인가 API, import, eval 차단)
-- [ ] 30회 테스트 셋 대상 차단율 100% 검증 스크립트 작성
-- [ ] 실행 타임아웃(Watchdog) 데코레이터 구현
+| 완료일 | 항목 | 세부 내용 | 산출물 / 커밋 |
+|:---|:---|:---|:---|
+| **2026-09-27** | 프로젝트 구조화 및 문서 체계화 | `docs/` 폴더 분리, 제안서 복사, 사양서 및 진행 관리 문서 수립 | `docs/proposal.md`, `docs/overview.md`, `docs/todo.md`, `docs/progress.md` |
+| **2026-09-27** | 보안 및 환경 설정 | Git 제외 파일(`.gitignore`) 작성 및 토큰/환경변수 분리 | `.gitignore`, `.env`, `.env.example` |
+| **2026-09-27** | Git 형상 관리 초기화 | 로컬 Git 저장소 초기화, `main` 브랜치 설정, 초기 커밋 완료 | `9dbcccb`, `ebc1394` |
 
 ---
 
-## 📝 주간 변경 이력 (Changelog)
+## 📝 일자별 상세 작업 로그 (Daily Work Log)
 
-### [2026-09-27]
-- 제안서 파일 `docs/` 디렉터리 구조로 정리
-- 보안 설정(`.gitignore`, `.env`, `.env.example`) 구축
-- 주간 진행 상황 추적 문서(`docs/progress.md`) 및 시스템 기술 사양서(`docs/overview.md`) 수립
+### 2026년 9월 27일 (일) - 프로젝트 착수 및 초기 셋업
+
+#### 1. 보안 및 환경 격리 설정
+* GitHub Personal Access Token(PAT)과 사용자 계정 정보를 로컬 환경 변수 파일([.env](file:///c:/Users/박수민/Desktop/종합설계II/.env))에 분리 저장.
+* [.gitignore](file:///c:/Users/박수민/Desktop/종합설계II/.gitignore)를 작성하여 `.env`, `*.token`, 가상환경(`.venv`), 파이썬 캐시(`__pycache__`) 등이 Git에 추적되거나 유출되지 않도록 원천 차단.
+* 협업 및 추후 배포를 위한 템플릿 파일([.env.example](file:///c:/Users/박수민/Desktop/종합설계II/.env.example)) 생성.
+
+#### 2. 프로젝트 문서 체계 정립 ([docs/](file:///c:/Users/박수민/Desktop/종합설계II/docs))
+* [docs/proposal.md](file:///c:/Users/박수민/Desktop/종합설계II/docs/proposal.md): 종합설계 II 제출 원본 제안서 복사 및 아카이빙.
+* [docs/overview.md](file:///c:/Users/박수민/Desktop/종합설계II/docs/overview.md): 개발 실무에 필요한 핵심 기술 사양서(정량 목표, Action Primitives API 명세, LED 비전 규격, 코딩 규칙) 작성.
+* [docs/todo.md](file:///c:/Users/박수민/Desktop/종합설계II/docs/todo.md): 향후 수행할 주차별 작업(할 일) 목록 독립 분리.
+* [docs/progress.md](file:///c:/Users/박수민/Desktop/종합설계II/docs/progress.md): 완료된 작업 내역 및 히스토리 기록용 문서 정비.
+* [README.md](file:///c:/Users/박수민/Desktop/종합설계II/README.md): 프로젝트 홈 및 문서 네비게이션 링크 구성.
+
+#### 3. Git 형상 관리
+* `git init` 실행 및 기본 브랜치를 `main`으로 지정.
+* 1차 초기화 커밋(`docs: initialize project with proposal, specs, and progress tracker`) 완료.
