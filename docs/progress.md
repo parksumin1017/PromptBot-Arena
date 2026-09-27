@@ -10,6 +10,7 @@
 | 완료일 | 항목 | 세부 내용 | 산출물 / 커밋 |
 |:---|:---|:---|:---|
 | **2026-09-27** | 프로젝트 구조화 및 문서 체계화 | `docs/` 폴더 분리, 제안서 복사, 사양서 및 진행 관리 문서 수립 | `docs/proposal.md`, `docs/overview.md`, `docs/todo.md`, `docs/progress.md` |
+| **2026-09-27** | 물리 규격 명세화 | 경기장(600×400mm, 벽 60mm) 및 로봇(50×50×50mm) 치수 확정 및 `overview.md` 반영 | `docs/overview.md` (`0d99d7f`) |
 | **2026-09-27** | 보안 및 환경 설정 | Git 제외 파일(`.gitignore`) 작성 및 토큰/환경변수 분리 | `.gitignore`, `.env`, `.env.example` |
 | **2026-09-27** | Git 형상 관리 및 원격 연동 | 로컬 저장소 초기화 및 GitHub 원격 저장소(`PromptBot-Arena`) 생성 및 첫 푸시 완료 | `https://github.com/parksumin1017/PromptBot-Arena` |
 
