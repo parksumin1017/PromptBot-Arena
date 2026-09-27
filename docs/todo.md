@@ -1,38 +1,34 @@
 # To-Do List & Backlog: 프롬프트 봇 아레나 (PromptBot Arena)
 
-본 문서는 앞으로 진행해야 할 작업(할 일)들을 우선순위와 주차별로 정리해 둔 문서입니다.  
-작업이 완료되면 본 목록에서 완료 처리 후, 상세 내역을 [progress.md](docs/progress.md)로 이동하여 기록합니다.
+본 문서는 **앞으로 진행해야 할 작업(할 일)**들을 우선순위와 주차별로 관리하는 백로그 문서입니다.  
+작업이 완료되면 본 목록에서 삭제/체크 후, 상세 완료 내역은 [progress.md](docs/progress.md)에 기록합니다.
 
 ---
 
 ## 🔥 Week 1 최우선 작업 (컴퓨터 한 대 환경)
 
-### 1. Python 가상환경 및 기초 의존성 구성
-- [ ] Python 3.10+ 기반 가상환경(`.venv`) 생성
-- [ ] 핵심 라이브러리 설치 및 `requirements.txt` 작성
-  - `pygame` (2D 시뮬레이터 구축용)
-  - `numpy` (좌표 연산, 벡터 기구학 계산)
-  - `opencv-python` (비전 알고리즘 선행 검증)
-  - `pydantic` / `google-genai` / `openai` (LLM 파이프라인)
+### 1. 가상환경 의존성 라이브러리 설치
+- [ ] 핵심 패키지 설치 (`pygame`, `numpy`, `opencv-python`, `python-dotenv`)
+- [ ] LLM 연동 패키지 설치 (`pydantic`, `google-genai`, `openai`)
 
 ### 2. 2D 가상 시뮬레이터(Digital Twin) 개발
-- [ ] `src/simulation/arena.py`: 책상 경기장 규격(비율) 윈도우 생성 및 경계벽 렌더링
-- [ ] `src/simulation/entities.py`: 아군 로봇, 상대 로봇, 퍽 3개 객체 정의 (좌표, 각도, 반지름)
-- [ ] `src/simulation/kinematics.py`: 2륜 차동 구동(Differential Drive) 기구학 모델링
-- [ ] `src/simulation/physics.py`: 로봇-벽면, 로봇-퍽 충돌 및 밀기(Push) 기초 물리 연산
+- [ ] 책상 경기장 규격($600 \times 400\text{ mm}$, 외벽 $60\text{ mm}$) 2D 윈도우 생성 및 경계벽 렌더링
+- [ ] 아군 로봇, 상대 로봇($50 \times 50\text{ mm}$), 퍽 3개 객체 모델링
+- [ ] 2륜 차동 구동(Differential Drive) 기구학 모델링
+- [ ] 로봇-벽면, 로봇-퍽 충돌 및 밀기(Push) 기초 물리 연산
 - [ ] 키보드로 로봇을 직접 조작해보며 물리 반응 검증 스크립트 작성
 
 ### 3. Action Primitives & CaP 파이프라인
-- [ ] `src/simulation/primitives.py`: 시뮬레이터 연동 표준 Action Primitives 구현
+- [ ] 시뮬레이터 연동 표준 Action Primitives 구현
   - `get_my_pose()`, `get_opponent_pose()`, `get_puck_positions()`, `move_to()`, `push_to()`, `stop()`
-- [ ] `src/llm_policy/prompt_template.py`: 시스템 프롬프트 및 Few-shot 예제 작성
-- [ ] `src/llm_policy/generator.py`: 자연어 입력 $\to$ `policy_step()` 파이썬 함수 생성 LLM 호출기 구현
+- [ ] 시스템 프롬프트 및 Few-shot 예제 작성
+- [ ] 자연어 입력 $\to$ `policy_step()` 파이썬 함수 생성 LLM 호출기 구현
 
 ### 4. AST 정적 분석 보안 샌드박스
-- [ ] `src/sandbox/ast_validator.py`: `ast.NodeVisitor` 기반 화이트리스트 검사기
+- [ ] `ast.NodeVisitor` 기반 화이트리스트 검사기
   - 비인가 import, eval, exec, __builtins__, sys, os 원천 차단
-- [ ] `src/sandbox/timeout.py`: 무한루프 방지 실행 타임아웃(Watchdog) 데코레이터
-- [ ] `tests/test_ast_sandbox.py`: 30회 정상/악성 코드 테스트 셋 작성 및 차단율 100% 검증
+- [ ] 무한루프 방지 실행 타임아웃(Watchdog) 데코레이터
+- [ ] 30회 정상/악성 코드 테스트 셋 작성 및 차단율 100% 검증
 
 ---
 
@@ -41,7 +37,7 @@
 ### Week 2~3 (10월 초·중순)
 - [ ] 웹캠 탑뷰 영상 캡처 및 HSV 능동 발광 LED 마스킹 알고리즘 구현
 - [ ] 20 ms 이하(60 FPS) 고속 트래킹 연산 벤치마킹 및 튜닝
-- [ ] 경기장 자재 및 로봇 부품(TT모터, ESP32, 배터리 등) 발주/수급
+- [ ] 경기장 자재 및 로봇 부품 발주/수급
 
 ### Week 4~6 (10월 중·하순)
 - [ ] 2륜 로봇 1차 조립 및 모터 드라이버 배선
