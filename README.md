@@ -33,7 +33,8 @@ conda activate arena
 │   ├── proposal.md       # 종합설계 II 정식 제안서 (불변 기준)
 │   ├── overview.md       # 시스템 아키텍처 및 Action Primitives 명세
 │   ├── todo.md           # 앞으로 할 일 목록 (Backlog)
-│   └── progress.md       # 이미 완료한 작업 일지 (Work Done)
+│   ├── progress.md       # 이미 완료한 작업 일지 (Work Done)
+│   └── presentation_guide.md # 주간 발표 PPT 제작 지침서 (요청 시에만 열람)
 ├── .env.example          # 환경 변수 템플릿
 ├── .gitignore            # Git 제외 파일 목록
 └── README.md             # 프로젝트 대문 및 실행 가이드
