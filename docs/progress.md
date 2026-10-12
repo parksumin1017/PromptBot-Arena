@@ -1,8 +1,124 @@
 # Work Progress
 
-## 2026-09-27
+## 2026-09-27 (3주차)
 - 프로젝트 디렉터리 및 문서(`proposal.md`, `overview.md`, `todo.md`) 구성
 - 경기장($600\times400\text{ mm}$), 로봇($50\times50\times50\text{ mm}$) 기본 규격 확정
 - GitHub 원격 저장소(`PromptBot-Arena`) 연동 및 `.gitignore` 설정
 - Anaconda 가상환경(`arena`, Python 3.11) 생성
 - Action Primitives API(0.5초 전술 주기, 안전 정지, will_collide) 명세 확정 및 `overview.md` 반영
+
+## 2026-10-04 (4주차)
+- **가상환경 의존성 라이브러리 설치 및 검증 완료**:
+  - `requirements.txt` 구축 및 `arena` 환경에 `pygame`, `numpy`, `opencv-python`, `python-dotenv`, `pydantic`, `google-genai`, `openai`, `pytest` 설치 및 임포트 정상 검증
+- **코어 데이터 모델 및 추상 인터페이스 구축**:
+  - `src/core/models.py`: `Puck`, `State`, `ActionCommand`, `ActionType` 구현
+  - `src/core/interfaces.py`: `BaseRobot`, `BaseVision` 추상 인터페이스 정의 (SW-HW 디커플링)
+- **2D 물리 엔진 및 순수 강체 접촉(Rigid-body Contact) 모델링 (`src/simulation/physics.py`)**:
+  - 차동 구동 기구학 ($v, \omega \to v_L, v_R$ 및 Runge-Kutta/Midpoint 수치 적분)
+  - **로봇 회전 고려 OBB 벽면/상호 충돌 분리**: 회전 각도에 따른 4개 코너 투영 반경을 적용하여 벽면 뚫림 및 로봇 상호 모서리 겹침 현상 원천 차단
+  - **퍽 지면 쿨롱 마찰(Coulomb Friction, 감속도 $3500\text{ mm/s}^2$) 적용**: 에어 하키처럼 미끄러지는 현상을 없애고 외력이 끊기면 즉각 정지하는 실물 물리 반영, 로봇 접촉 시 튕겨 나가지 않는 비탄성(Inelastic) 푸시 적용
+  - **인공적 인력/자석 효과 100% 제거**: V-범퍼(홈 $+15\text{ mm}$, 전방 외측 $+25\text{ mm}$) 5개 선분 경사벽 기반 순수 수직 항력/척력(Normal Contact Force) 접촉 물리 엔진으로 전면 개편
+  - **퍽 규격 재정립 반영**: 지름 $20\text{ mm}$ (반지름 $10\text{ mm}$) 규격 전 모듈(`models.py`, `physics.py`, `robot_sim.py`, `arena_sim.py`, `overview.md`) 반영 완료
+- **Pygame 기반 2D Digital Twin 시뮬레이터 구축 (`src/simulation/`)**:
+  - `arena_sim.py`: $600\times400\text{ mm}$ (1.5배율 $900\times600\text{ px}$ 렌더링), V자 홈이 실제 음각으로 파여 있는 5각 다각형 로봇 렌더링(퍽과 전면 직사각형 겹침 시각 버그 해결), Red/Blue 능동 LED 로봇 2대, 순백색 LED 퍽 3개, HUD 대시보드
+  - `robot_sim.py`: 60 FPS 저수준 궤적 추종 제어기 및 안전 정지(Safe Stop) 구현
+  - `vision_sim.py`: 시뮬레이터 환경에서 0.5초 주기 State 추출기 구현
+- **키보드 조작 및 실시간 물리 검증 스크립트 작성 (`scripts/test_sim_keyboard.py`)**:
+  - WASD/방향키 수동 주행, 퍽 푸시 자동 테스트(1, 2, 3), 홈 복귀(0), 필드 리셋(R)
+- **물리/기구학 단위 테스트 7종 구축 및 통과 (`tests/test_simulation_physics.py`)**:
+  - 각도 정규화, 차동 구동 직진 적분, 벽면 클램핑, 퍽 벽면 충돌/마찰 감속, V-범퍼 순수 척력 푸싱, **로봇 후진 시 인력 부재 검증(Zero Attraction)**, Headless 시뮬레이터 120스텝 전진 무결성 100% 통과 (0.54s)
+- **표준 Action Primitives API 구현 및 검증 완료 (`src/core/primitives.py`)**:
+  - 모션 명령: `push(puck, target)`, `move_to(target)`, `stop()`
+  - 환경 인지: `get_dist(pos1, pos2)`, `get_closest_puck(pucks, to_pos)`, `get_pucks_in_zone(pucks, zone)`
+  - 지능형 충돌 예측: `will_collide(action, state)` 시공간 10단계 외삽(상대 속도 벡터 및 경로 퍽 간섭 감지)
+  - `policy_step(state)` 실행 컨텍스트 스코프 주입기 `build_primitives_scope(state)` 구현
+  - **Action Primitives 단위 테스트 6종 신설 및 전체 13종 테스트 100% 통과 (`tests/test_action_primitives.py`)**
+- **로봇 조종 주체(Agent) 캡슐화 및 통일된 제어 파이프라인 정립 (`src/core/agents.py`, `src/core/interfaces.py`)**:
+  - `BaseAgent` 추상 인터페이스 정의: `get_action(state: State) -> ActionCommand` 단일 계약
+  - 터미널 직접 입력/API 제어와 LLM/사용자 작성 파이썬 코드가 완전히 동일한 Primitives 및 State 인터페이스를 공유하도록 통일
+  - **`CodePolicyAgent`**: LLM(Code-as-Policies)이나 사람이 작성한 `def policy_step(state)` 파이썬 코드/문자열을 컴파일 및 실행, 예외 발생 시 안전 정지(Fail-safe STOP)
+## 2026-10-05
+- **공식 기술 설계 명세서 수립 ([docs/design.md](docs/design.md))**:
+  - 임의의 휴리스틱 수치와 비인가 기능 개발을 원천 방지하기 위해 엄밀한 엔지니어링 설계 명세서 수립
+  - **계층 구조 정립**: 0.5초(2 Hz) 고수준 전술 판단(`policy_step`)과 16.6ms(60 FPS) 저수준 궤적 추종(30스텝 프로파일) 완전 분리
+  - **수학적 궤적 보간 공식화**: 연속 매개변수 곡선인 3차 에르미트 스플라인(Cubic Hermite Spline) 수식 및 가속도/속도 한계 클리핑 모델 수립
+  - **기하학적 엣지 케이스 정책 수식화**: Case A(급격한 진입각 우회 경유점 $P_{\text{via}}$ 벡터 연산) 및 Case B(벽면 밀착 퍽 긁어내기/Safe Stop 판정) 엄밀 정의
+  - **AST 샌드박스 및 워치독 명세**: 화이트리스트 노드 기반 비인가 API 원천 차단 및 무한루프 방지 100ms 런타임 타임아웃 정의
+  - **프로젝트 파일 구조 및 의존성 명세 (제8장)**: 모듈별 단일 책임 및 허용 `import` 범위 표준화
+- **비인가 및 휴리스틱 레거시 코드 전량 폐기 (Clean-up)**:
+  - 비인가 텍스트 CLI 스크립트(`scripts/run_cli_control.py`), 임시 키보드 스크립트(`scripts/test_sim_keyboard.py`), `src/core/agents.py`, 구 규격 테스트 파일 전량 삭제
+- **[docs/design.md](docs/design.md) 기준 코어 및 시뮬레이션 전면 재구현**:
+  - `src/core/models.py`: 불변 읽기 전용 DTO(`State`, `Puck`, `Waypoint`), 30-step 프로파일 컨테이너 `ActionCommand` 구현
+  - `src/core/trajectory.py`: Hermite Spline 수식 및 정확한 물리 제원($v_{\max}=150\text{ mm/s}, \omega_{\max}=\pi\text{ rad/s}, a_{\max}=300\text{ mm/s}^2, \alpha_{\max}=2\pi\text{ rad/s}^2$) 준수 프로파일러 구현
+  - `src/core/primitives.py`: `push`, `move_to`, `stop` 표준 API 및 0.5초 시공간 등속도 외삽 충돌 가드($D_{\text{robot-robot}}<55\text{ mm}, D_{\text{robot-puck}}<38\text{ mm}$) 구현
+  - `src/core/security.py`: `ast.NodeVisitor` 화이트리스트 검사기 및 100ms Watchdog 타임아웃 래퍼 구현
+  - `src/core/interfaces.py`: `BaseRobot`, `BaseVision`, `BaseAgent`, `CodePolicyAgent` 인터페이스 단일화
+  - `src/simulation/physics.py` & `arena_sim.py`: 마찰 감속도 $1960\text{ mm/s}^2$ 반영, 60 FPS 제어 루프에서 30개 웨이포인트 순차 소비 및 물리 수치 적분 연동
+  - `src/strategies/sample_policy.py`: 표준 `policy_step(state: State) -> ActionCommand` 전략 샘플 작성
+  - `scripts/run_sim.py`: 60초 Core Pusher 시뮬레이터 공식 실행 진입점 구축
+- **정량적 단위/통합 테스트 18종 구축 및 100% 통과 (`tests/`)**:
+  - `tests/test_primitives.py` (7종 통과): Primitives 입출력 규격 및 충돌 감지 Safe Stop 검증
+  - `tests/test_trajectory.py` (4종 통과): Hermite Spline 보간 정확도, 물리 한계 클리핑, $P_{\text{via}}$ 계산, 벽면 스크래핑 검증
+  - `tests/test_security.py` (3종 통과): **30개 비인가/악성 코드 테스트 셋 대상 차단율 100% 달성**, 100ms 무한루프 타임아웃 검증
+  - `tests/test_physics.py` (4종 통과): 2륜 차동 기구학 한계, 벽면 클램핑, 퍽 마찰 감속, **60초 무교착(3600스텝) 시뮬레이션 완주 검증**
+  - **전체 18종 테스트 2.48초 만에 100% 통과 완료**
+- **하드웨어 및 경기장 제작 자재 구매 완료 ([docs/bought.md](bought.md))**:
+  - 실물 로봇(XIAO ESP32-C3, N20 모터, DRV8833, 배터리 등) 및 경기장 MDF($600\times400\text{ mm}$), 체결 부품 등 하드웨어 제작용 부품 일체 구매 완료 ([상세 지출 내역](bought.md))
+
+## 2026-10-11 (5주차)
+- **부품 배송 지연(디바이스마트 7주차 도착 가정)에 따른 현실적 주차별 로드맵 전면 개정 ([docs/todo.md](todo.md))**:
+  - 하드웨어 조립 대기 기간(5~6주차) 동안 순수 SW/시뮬레이션 및 사전 펌웨어/3D 모델링 100% 선행 완성 전략 수립
+  - 8주차 중간 점검(실물 1대 자율 주행 시연) 및 14주차 Demo Day 완수를 위한 현실적 마일스톤 재정립
+- **Core Pusher 공식 룰 엔진 및 자동 심판 모듈 구현 (`src/simulation/referee.py`)**:
+  - 60.0초 타이머, 진영별($x < 300\text{ mm}$ vs $x \ge 300\text{ mm}$) 정밀 퍽 계측 및 점수 산출
+  - 공식 승패 판정(`MatchWinner.RED`, `MatchWinner.BLUE`, `MatchWinner.DRAW`) 및 결과 리포트(`MatchResult`) 생성
+  - 심판 룰 판정 정확도 100% 단위 테스트 7종 신설 (`tests/test_referee.py`)
+- **2D 시뮬레이터 심판 연동 및 경기 종료 HUD 개선 (`src/simulation/arena_sim.py`)**:
+  - 60초 경기 종료 시 로봇 자동 정지 및 중앙 배너 오버레이 렌더링
+  - 경기 종료 시 콘솔에 공식 결과 리포트 상세 출력
+- **Level 2 상대 보스 에이전트(Greedy Pusher) 전략 구현 (`src/strategies/boss/level2.py`)**:
+  - Blue 팀 관점에서 가장 가까운 퍽을 Red 진영 깊숙한 목표 좌표로 밀어내는 공격 전술 구현
+  - `will_collide` 충돌 감지 가드 및 사이드 우회 회피 기동 탑재
+  - 보스 에이전트 단위 테스트 작성 (`tests/test_boss.py`)
+- **60초 시뮬레이터 1:1 대전 연동 (`scripts/run_sim.py`)**:
+  - Red (Player Sample Policy) vs Blue (Level 2 Boss) 실시간 1:1 대전 기본 실행 및 심판 리포트 연동
+- **순수 직진/회전 수동 조작 에이전트 구현 (`src/strategies/keyboard_agent.py`)**:
+  - 3차 곡선 보간 및 충돌 예측(`will_collide`) 없이, 사용자의 키보드 입력(WASD/방향키)에 따라 즉각적인 선속도/각속도 $(v, \omega)$를 30스텝 상수 프로파일로 출력하는 `KeyboardAgent` 구현
+  - 단위 테스트 작성 (`tests/test_keyboard_agent.py`)
+  - **Red(Level 2 보스 AI) vs Blue(키보드 플레이어) 실시간 대전 스크립트 작성 (`scripts/run_keyboard_match.py`)**: 사용자가 직접 보스와 피지컬 배틀을 치를 수 있는 갈아끼우기식 환경 완비
+- **멀티 프로바이더 규격화 LLM 어댑터 및 CaP 플래너 구현 (`src/core/llm_clients.py`, `src/core/llm_planner.py`)**:
+  - 어댑터 패턴 기반 `BaseLLMClient` 추상 인터페이스 수립 (향후 상용 유료 API 교체에 대비한 완전 규격화)
+  - **Postech GenAI API (Posicube) 클라이언트 구현**: `a1/gpt`, `a2/gemini`, `a3/claude` 엔드포인트 연동 및 API Key 헤더 인증 지원
+  - 공식 OpenAI / Google GenAI 및 유닛 테스트용 Mock 클라이언트 구현
+  - **자연어 $\to$ `policy_step()` 파이썬 함수 생성 및 AST 자동 보안 검증 파이프라인 (`LLMPlanner`)** 구현
+  - 단위 테스트 4종 신설 (`tests/test_llm_planner.py`)
+- **자연어 대화형 배틀 런처 제작 (`scripts/run_battle.py`)**:
+  - 사용자 자연어 입력 $\to$ LLM 코드 생성 $\to$ AST 검증 $\to$ Level 2 보스와의 60초 디지털 트윈 가상 배틀 풀루프 완성
+
+## 2026-10-12 (5주차)
+- **키보드 에이전트 조작성 개선 및 60 FPS 제어 파이프라인 구축 (`src/strategies/keyboard_agent.py`, `src/simulation/arena_sim.py`)**:
+  - 로봇 전면(V/ㄷ-범퍼) 기준 회전 방향 반전 버그 수정 (`Left`: $\omega < 0$, `Right`: $\omega > 0$)
+  - `is_realtime=True` 속성 기반 60 FPS 즉각 입력 반영 파이프라인 구현 (입력 지연 0ms, 키보드를 떼는 즉시 정지)
+- **물리 엔진 퍽 맵 탈출 방지 하드 클램핑 (`src/simulation/physics.py`)**:
+  - 벽면 압박 시 임펄스 누적으로 인한 속도 폭발 억제 (`max_speed = 350 mm/s` 상한 적용)
+  - 차체 내부 파고듦(Tunneling) 방지 및 `clamp_pucks_to_arena()`를 통한 경기장 내벽 범위 하드 클램핑 완료
+- **Red(키보드 인간) vs Blue(LLM 에이전트) 대전 런처 구현 (`scripts/run_keyboard_vs_llm.py`)**:
+  - 플레이어가 Red 팀으로 직접 주행하고, Blue 팀은 자연어 전략 프롬프트로부터 LLM이 생성한 파이썬 자율 코드로 대전하는 1:1 대전 환경 완비
+- **AST 보안 샌드박스 고도화 (`src/core/security.py`, `src/core/interfaces.py`)**:
+  - LLM이 자체 정의한 로컬 헬퍼 함수(`def clamp()` 등)의 정의 및 호출을 안전하게 허용하도록 `defined_functions` 사전 수집 로직 추가
+  - `Subscript`, `Slice` 등 튜플/리스트 인덱싱 노드를 화이트리스트에 추가
+  - `CodePolicyAgent`에 `code_str` 속성 저장 누락 수정
+- **충돌 방지 로직에서 퍽(Puck) 간섭 전면 제외 (`src/core/primitives.py`)**:
+  - 퍽은 하드웨어 보호 대상이 아닌 상호작용 대상이므로 `check_trajectory_safety` / `will_collide`에서 퍽 충돌 검사 전면 제거
+  - 퍽과 접촉한 상태에서 회피/이동 기동 시 퍽 때문에 억울하게 `will_collide=True`로 멈추던 버그 완전 해결
+- **상단 대시보드(HUD) 실시간 양 팀 상태/정책 시각화 (`src/simulation/arena_sim.py`)**:
+  - RED: 실시간 키보드 조작 상태 (`FORWARD`, `TURN LEFT/RIGHT`, `DRIVE+TURN`, `STOP`) 시각화
+  - BLUE: 실시간 자율 정책 및 목표 좌표 (`PUSH #id → (x, y)`, `MOVE → (x, y)`, `SAFE STOP`) 시각화
+- **로봇 전면 'ㄷ'자형(U-channel) 범퍼 물리 및 렌더링 개편 (`src/simulation/physics.py`, `src/simulation/arena_sim.py`)**:
+  - V자 빗면으로 인한 퍽 횡방향 이탈(Slip-out)을 방지하기 위해 평평한 바닥면(`u=15, w=[-18, +18]`)과 양쪽 가이드 펜스(`w=±18, u=[15, 25]`)가 있는 ㄷ자형 충돌 채널 및 2D 렌더링 폴리곤 적용
+- **단위/통합 테스트 36종 100% 통과 (`tests/`)**:
+  - 벽면 압박 탈출 방지 테스트(`test_puck_pinned_to_wall_cannot_escape`) 및 로컬 헬퍼 함수 허용 테스트(`test_ast_security_allows_local_helper_function`) 포함 36종 전원 통과 (1.50s)
+- **차주(6주차) 개선 과제 도출**:
+  - 0.5초(2 Hz) 전술 평가 주기마다 직전 푸시 단계(Approach $\to$ Contact $\to$ Push Phase)를 잃어버리고 다시 퍽 뒤로 우회하려 헛도는 무상태성 현상(Tactical Horizon Hysteresis) 개선 과제 수립
+
+

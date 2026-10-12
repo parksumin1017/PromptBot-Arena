@@ -50,3 +50,5 @@ Thumbs.db
 logs/
 *.log
 scratch/
+desktop.ini
+.pytest_cache/
