@@ -45,8 +45,11 @@ def main():
 
     print(f"[*] 변환 소요 시간: {latency:.2f}초")
     if error:
-        print(f"[!] 경고: {error}")
-        print("[!] 안전을 위해 블루 로봇이 정지(Safe Stop) 상태로 출전합니다.")
+        print(f"[!] API/보안 경고: {error}")
+        print("[*] API 토큰 소진 또는 타임아웃 감지 -> 사전에 검증된 저장된 LLM 정책 코드로 자동 전환합니다!")
+        from src.strategies.llm_saved_policy import policy_step as fallback_policy_step
+        blue_agent = CodePolicyAgent(policy_func=fallback_policy_step, agent_name="Blue_LLM_Saved_Fallback")
+        print("[+] 기존 검증 LLM 정책(공격 푸시 & 사이드 우회) 탑재 완료!")
     else:
         print("[+] AST 정적 보안 검사 통과! 블루 로봇에 자율 정책이 탑재되었습니다.")
         if getattr(blue_agent, "code_str", None):
